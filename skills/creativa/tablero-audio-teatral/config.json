@@ -1,0 +1,12 @@
+{
+  "audio_format": "mp3",
+  "output_dir": "audio",
+  "naming": "NN - titulo.mp3",
+  "template_html": "references/tablero_audio.html",
+  "copyright_warning": true,
+  "notes": {
+    "servir_local": "Servir por defecto con scripts/serve.py. Publicar solo tras confirmacion expresa de permisos o licencias compatibles.",
+    "copy": "Que un recurso sea gratuito no significa que carezca de copyright. Registrar y respetar su licencia.",
+    "guion": "El guion llega ya armado; el agente solo sugiere cues si faltan y el usuario confirma."
+  }
+}

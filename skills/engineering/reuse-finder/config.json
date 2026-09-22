@@ -1,0 +1,12 @@
+{
+  "root": "/home/ferkinzz/Documentos",
+  "exclude_dirs": [
+    "node_modules", ".git", ".next", ".nuxt", ".wrangler", ".vercel",
+    "dist", "build", "out", "vendor", ".vscode", ".idea", "coverage",
+    ".cache", ".turbo", "__pycache__", ".venv", "venv", ".dev",
+    ".antigravitycli", "logs_prod", "respaldos_db", "respaldo_mixaa"
+  ],
+  "extensions": [".js", ".jsx", ".ts", ".tsx", ".mjs", ".cjs", ".html", ".css", ".scss"],
+  "exclude_filename_patterns": [".min.js", ".min.css", "-lock.json", ".d.ts"],
+  "max_file_size_bytes": 400000
+}
