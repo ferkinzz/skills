@@ -4,6 +4,23 @@ Colección personal de skills para asistentes de programación. Aquí reúno ins
 
 Cada skill vive en su propia carpeta, con sus instrucciones y los recursos que necesita. El catálogo crecerá conforme agregue nuevas habilidades.
 
+<p align="center">
+  <a href="https://github.com/ferkinzz">
+    <img src="assets/fernando.png" alt="Fernando — ferkinzz" width="180">
+  </a>
+</p>
+
+<p align="center">
+  <img src="assets/ferkinzz-signature-dark.png#gh-dark-mode-only" alt="ferkinzz" width="320">
+  <img src="assets/ferkinzz-signature.png#gh-light-mode-only" alt="ferkinzz" width="320">
+</p>
+
+<p align="center">
+  <a href="https://github.com/ferkinzz">github.com/ferkinzz</a> ·
+  <a href="https://rtsi.site">rtsi.site</a> ·
+  <a href="https://rtsi.mx">rtsi.mx</a>
+</p>
+
 ## Dale este prompt a tu IA
 
 Copia este prompt en tu asistente de programación con acceso a internet y a tus archivos. Cambia `[nombre-de-la-skill]` por la skill que quieras instalar, por ejemplo `reuse-finder`.
