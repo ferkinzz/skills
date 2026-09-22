@@ -128,14 +128,23 @@ Usa la plantilla `references/tablero_audio.html` como base:
    del proyecto, para que quede **auto-contenida**.
 5. El HTML debe usar rutas relativas: `audio/<archivo.mp3>` e
    `img/<archivo.ext>`.
+6. Muestra dentro de cada boton/cue una miniatura de su imagen para que el
+   operador pueda identificarla antes de proyectarla. Reserva un tamano
+   uniforme para evitar saltos en el tablero y marca claramente `Sin imagen`
+   cuando el cue no tenga una. La miniatura debe tener texto alternativo
+   descriptivo; no reemplaza el nombre escrito del cue.
 
 El tablero ya incluye:
 - Botones por audio en loop infinito con fundido al cambiar.
 - Volumen global y boton "detener todo".
 - Atajos de teclado (1-9 por track, espacio = detener).
 - Panel de guion + cues sincronizado.
-- Imagenes por cue y **vista de proyeccion a pantalla completa** (para segundo
-  monitor).
+- Imagenes por cue y una **ventana/pestaña de proyeccion independiente**,
+  sincronizada con el tablero por el servidor local. La vista de proyeccion
+  tiene su propio boton de pantalla completa para colocarla en el segundo
+  monitor; no uses una superposicion dentro de la pestaña del operador.
+- Miniaturas visibles dentro de los botones del tablero para reconocer cada
+  imagen antes de enviarla a proyeccion.
 - Por defecto, los archivos se sirven con el servidor local (ver paso 5).
 
 ### Paso 5 - Servir localmente por defecto
@@ -170,6 +179,12 @@ permiso o tienen una licencia compatible con la publicacion prevista. Antes:
 - Abre el tablero en el navegador y confirma que cada boton reproduce su
   audio y se funde al cambiar.
 - Confirma que las imagenes aparecen en su cue y en la vista de proyeccion.
+- Confirma que cada cue muestra la miniatura correcta y que los cues sin
+  recurso visual dicen `Sin imagen`.
+- Confirma que "Abrir proyeccion" crea otra ventana/pestaña, que el tablero
+  indica "Conectada" y que al cambiar de cue la imagen se actualiza sin
+  recargar. Mueve esa ventana al segundo monitor y activa alli pantalla
+  completa.
 - Valida de nuevo con ffprobe cualquier audio que haya dado error al
   descargar.
 
