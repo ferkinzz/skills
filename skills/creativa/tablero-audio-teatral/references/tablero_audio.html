@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!--
+  TABLERO DE AUDIO + IMÁGENES PARA OBRA DE TEATRO (offline)
+  =========================================================
+  Plantilla de la skill tablero-audio-teatral.
+
+  CÓMO USAR ESTA PLANTILLA (lo hace el agente):
+  1. Copia este archivo a la carpeta del proyecto.
+  2. Rellena SOLO la sección CONFIG (más abajo): título, botones de audio,
+     imágenes por cue, nombre del audio con imagenes y el texto del guion.
+  3. Guarda los mp3 en audio/ y las imágenes en img/.
+  4. Sírvelo localmente (python3 serve.py --dir .). Publícalo únicamente si
+     confirmaste los derechos/licencias de todos los recursos.
+-->
+<title>Tablero de Audio - Obra de Teatro</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    background: #1a1206;
+    color: #f5ead6;
+    min-height: 100vh;
+    padding: 20px;
+  }
+  header { text-align: center; margin-bottom: 18px; }
+  header h1 { font-size: 1.5rem; color: #e8a33d; letter-spacing: 1px; }
+  header p { color: #b8a688; font-size: 0.85rem; margin-top: 6px; }
+
+  .layout { display: flex; gap: 18px; max-width: 1500px; margin: 0 auto; align-items: flex-start; }
+
+  #panel { flex: 3; min-width: 0; }
+  #status {
+    background: #2a1f10; border: 1px solid #4a3a1e; border-radius: 10px;
+    padding: 10px 18px; font-size: 1rem; margin-bottom: 16px;
+    min-height: 42px; display: flex; align-items: center; gap: 10px;
+  }
+  #status .dot {
+    width: 12px; height: 12px; border-radius: 50%; background: #555;
+    flex-shrink: 0; transition: background 0.3s, box-shadow 0.3s;
+  }
+  #status.playing .dot { background: #3ddc84; box-shadow: 0 0 10px #3ddc84; }
+  #status #cueName { color: #3ddc84; font-weight: 600; }
+  #status.idle #cueName { color: #b8a688; }
+
+  section { margin-bottom: 16px; }
+  section h2 {
+    font-size: 0.85rem; text-transform: uppercase; letter-spacing: 2px;
+    color: #e8a33d; margin-bottom: 10px; border-bottom: 1px solid #3a2c16; padding-bottom: 6px;
+  }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .btn {
+    background: #2a1f10; border: 1px solid #4a3a1e; color: #f5ead6;
+    border-radius: 10px; padding: 14px 12px; font-size: 0.95rem;
+    text-align: left; cursor: pointer;
+    transition: background 0.2s, border-color 0.2s, transform 0.1s;
+  }
+  .btn:hover { background: #3a2c16; border-color: #e8a33d; }
+  .btn:active { transform: scale(0.97); }
+  .btn.playing {
+    background: #164a2c; border-color: #3ddc84;
+    box-shadow: 0 0 12px rgba(61,220,132,0.4);
+  }
+  .btn .num {
+    display: inline-block; background: #4a3a1e; color: #e8a33d;
+    border-radius: 6px; font-size: 0.75rem; padding: 2px 8px; margin-right: 8px; font-weight: 700;
+  }
+  .btn .cue-tag { display: block; font-size: 0.75rem; color: #b8a688; margin-top: 4px; }
+  .btn.wide { grid-column: span 2; }
+
+  /* Vista previa y proyección de imágenes */
+  #imgPreview {
+    margin: 12px 0; padding: 10px 14px; background: #0f0a04;
+    border: 1px dashed #4a3a1e; border-radius: 10px;
+    display: flex; align-items: center; gap: 12px; min-height: 90px;
+  }
+  #imgPreview img { max-height: 70px; max-width: 120px; border-radius: 6px; display: none; }
+  #imgPreview .ph { color: #b8a688; font-size: 0.85rem; }
+  #projBtn {
+    background: #3a2c16; border: 1px solid #e8a33d; color: #e8a33d;
+    border-radius: 8px; padding: 8px 14px; cursor: pointer; font-weight: 600;
+  }
+  #projBtn:hover { background: #4a3a1e; }
+
+  .controls {
+    display: flex; align-items: center; gap: 14px; background: #2a1f10;
+    border: 1px solid #4a3a1e; border-radius: 10px; padding: 12px 18px;
+  }
+  .controls label { font-size: 0.9rem; color: #b8a688; }
+  #vol { flex: 1; accent-color: #e8a33d; height: 6px; }
+  #stopAll {
+    background: #4a160f; border: 1px solid #8a2c1e; color: #ffb3a3;
+    border-radius: 8px; padding: 8px 14px; cursor: pointer; font-weight: 600;
+  }
+  #stopAll:hover { background: #6b2117; }
+  kbd { background: #0f0a04; border: 1px solid #4a3a1e; border-radius: 4px; padding: 1px 6px; font-size: 0.8rem; color: #e8a33d; }
+  .loop-note { color: #3ddc84; font-size: 0.8rem; margin-left: auto; }
+
+  /* Panel guion */
+  #scriptPanel {
+    flex: 1; background: #0f0a04; border: 1px solid #4a3a1e; border-radius: 10px;
+    max-height: calc(100vh - 120px); display: flex; flex-direction: column;
+  }
+  #scriptPanel .script-header {
+    padding: 10px 14px; background: #2a1f10; border-bottom: 1px solid #4a3a1e;
+    font-size: 0.85rem; font-weight: 700; color: #e8a33d;
+    display: flex; align-items: center; gap: 8px;
+  }
+  #scriptPanel .script-header .btn-mini {
+    margin-left: auto; background: #4a3a1e; border: 1px solid #6a5a3a;
+    color: #f5ead6; border-radius: 6px; padding: 3px 10px; font-size: 0.75rem; cursor: pointer;
+  }
+  #script {
+    overflow-y: auto; padding: 12px 14px; font-size: 0.82rem; line-height: 1.55;
+    white-space: pre-wrap; color: #e8dfcc;
+  }
+  #script b.name { color: #e8a33d; }
+  #script .stagedir { color: #b8a688; font-style: italic; }
+  #script [data-cue] {
+    display: block; background: #12261c; border-left: 3px solid #3ddc84;
+    color: #8ff0b8; font-weight: 600; font-style: normal;
+    padding: 6px 10px; margin: 6px 0; border-radius: 0 8px 8px 0; cursor: pointer;
+  }
+  #script [data-cue]:hover { background: #1a3a2a; }
+
+  /* Proyección a pantalla completa (segundo monitor) */
+  #projOverlay {
+    position: fixed; inset: 0; z-index: 9999; display: none;
+    background: #000; align-items: center; justify-content: center;
+  }
+  #projOverlay.show { display: flex; }
+  #projOverlay:fullscreen { display: flex; }
+  #projImg { max-width: 100%; max-height: 100%; object-fit: contain; }
+  #projLabel {
+    position: absolute; bottom: 12px; left: 0; right: 0; text-align: center;
+    color: rgba(255,255,255,0.9); font-size: 1.2rem; text-shadow: 0 1px 4px #000;
+  }
+
+  @media (max-width: 900px) {
+    .layout { flex-direction: column; }
+    #scriptPanel { max-height: 400px; width: 100%; }
+  }
+</style>
+</head>
+<body>
+  <header>
+    <h1>🎭 <span id="titleText">TABLERO DE AUDIO</span></h1>
+    <p>Click en un botón reproduce su audio en <b style="color:#3ddc84">loop infinito</b>; al tocar otro, el actual se apaga con fundido.</p>
+  </header>
+
+  <div class="layout">
+    <!-- ====== 75%: CONTROLES ====== -->
+    <div id="panel">
+      <div id="status" class="idle">
+        <span class="dot"></span>
+        <span>Sonando: <span id="cueName">—</span></span>
+        <span class="loop-note">🔁 loop activo</span>
+      </div>
+
+      <div id="sections"></div>
+
+      <div id="imgPreview">
+        <img id="prevImg" src="" alt="">
+        <span class="ph" id="prevPh">🖼 Sin imagen para este cue</span>
+        <button id="projBtn">🖥 Proyección</button>
+      </div>
+
+      <div class="controls">
+        <label for="vol">Volumen</label>
+        <input type="range" id="vol" min="0" max="100" value="80">
+        <button id="stopAll">■ Detener todo</button>
+      </div>
+
+      <p style="margin-top:12px; font-size:0.8rem; color:#b8a688;">
+        Atajos: <kbd>1</kbd>–<kbd>9</kbd> cada audio · <kbd>Espacio</kbd> detener todo
+      </p>
+      <p style="margin-top:6px; font-size:0.75rem; color:#8a7c5e;">
+        Uso local por defecto. Publicar solo con derechos o licencias confirmados.
+      </p>
+    </div>
+
+    <!-- ====== 25%: GUION ====== -->
+    <div id="scriptPanel">
+      <div class="script-header">
+        📜 Guion + Cues de audio
+        <button class="btn-mini" id="toTop">▲ Arriba</button>
+      </div>
+      <div id="script"></div>
+    </div>
+  </div>
+
+  <div id="projOverlay">
+    <img id="projImg" src="" alt="">
+    <div id="projLabel"></div>
+  </div>
+
+  <audio id="player" preload="auto" loop></audio>
+
+<script>
+// ============================================================
+// ═══ CONFIG — Rellena esto por obra ═══
+// ============================================================
+const TITLE = "HISTORIAS DEL INTEROCEÁNICO";
+
+// Cada botón: { num, file, label, cue, group }
+//   num:   número mostrado y atajo de teclado (1..9)
+//   file:  ruta relativa al mp3 dentro de audio/
+//   label: nombre corto del botón
+//   cue:   texto pequeño bajo el botón (cues donde se usa)
+//   group: título de sección ("Efectos", "Música", ...)
+//   img:   (opcional) imagen que muestra este cue en proyección/preview
+//   volumeScale: (opcional) 0..1 factor de volumen para este cue (ej "lejano")
+const AUDIOS = [
+  { num: 1, file: "audio/01 - Pajaros.mp3",         label: "Pájaros / estación",    cue: "Inicio · CUE 1",              group: "Efectos", img: "img/estacion.jpg" },
+  { num: 2, file: "audio/02 - Silbato.mp3",         label: "Silbato de tren",       cue: "CUE 2, 3, 7, 12",            group: "Efectos" },
+  { num: 3, file: "audio/03 - Tren a vapor.mp3",    label: "Tren a vapor",          cue: "Llegada/salida · CUE 4,5,10", group: "Efectos" },
+  { num: 4, file: "audio/04 - Tren en marcha.mp3",  label: "Tren en marcha vagón",  cue: "Viaje · CUE 6, 9",            group: "Efectos" },
+  { num: 5, file: "audio/05 - Musica emotiva.mp3",  label: "Música emotiva (fondo)",cue: "Leyenda · final · CUE 6,11",  group: "Música", img: "img/volcanes.jpg" },
+  { num: 6, file: "audio/06 - Caos sirenas.mp3",    label: "Caos / sirenas",        cue: "Descarrilamiento · CUE 8",    group: "Efectos" },
+];
+
+// Guion técnico: marca los puntos de entrada con [CUE n ▶ archivo]
+const SCRIPT_TEXT = `TITULO DE LA OBRA
+
+Nota del guion técnico: cada línea [CUE n ▶] indica qué audio suena.
+Click sobre un cue lo reproduce (o lo detiene).
+
+[CUE 1 ▶ audio/01 - Pajaros.mp3]
+Escena 1 - La estación.
+Sonido de fondo: pájaros a lo lejos.
+Personaje: (diálogo de ejemplo)
+[CUE 2 ▶ audio/02 - Silbato.mp3]
+Personaje: ¡Ya casi llega!
+[CUE 4 ▶ audio/03 - Tren a vapor.mp3]
+(Suben al tren; el tren parte)
+[CUE 6 ▶ audio/04 - Tren en marcha.mp3]
+Escena 2 - El viaje (tren rodando)
+FIN`;
+
+// ============================================================
+// ═══ Núcleo: NO tocar de aquí en adelante ═══
+// ============================================================
+const player = document.getElementById('player');
+const status = document.getElementById('status');
+const cueName = document.getElementById('cueName');
+const vol = document.getElementById('vol');
+const FADE = 0.8;
+let currentBtn = null;
+let fadeTimer = null;
+
+document.getElementById('titleText').textContent = TITLE;
+
+player.volume = vol.value / 100;
+
+function stopCurrent(silent) {
+  if (fadeTimer) { clearInterval(fadeTimer); fadeTimer = null; }
+  const s = player.currentTime;
+  player.pause();
+  player.currentTime = s;
+  if (currentBtn) { currentBtn.classList.remove('playing'); currentBtn = null; }
+  if (!silent) {
+    status.className = 'idle';
+    cueName.textContent = '—';
+  }
+}
+
+function fadeTo(audio, target) {
+  if (fadeTimer) { clearInterval(fadeTimer); fadeTimer = null; }
+  const steps = 25;
+  const stepMs = (FADE * 1000) / steps;
+  const delta = target - audio.volume;
+  let n = 0;
+  fadeTimer = setInterval(() => {
+    n++;
+    audio.volume = Math.max(0, Math.min(1, audio.volume + delta / steps));
+    if (n >= steps) { clearInterval(fadeTimer); fadeTimer = null; }
+  }, stepMs);
+}
+
+function setPreview(btn) {
+  const cfg = btn.dataset;
+  const img = document.getElementById('prevImg');
+  const ph = document.getElementById('prevPh');
+  if (!cfg.img) {
+    img.style.display = 'none';
+    ph.style.display = '';
+    ph.textContent = '🖼 Sin imagen para este cue';
+  } else {
+    img.src = cfg.img;
+    img.style.display = '';
+    ph.style.display = 'none';
+  }
+  const projImg = document.getElementById('projImg');
+  const projLabel = document.getElementById('projLabel');
+  if (cfg.img) { projImg.src = cfg.img; projImg.style.display = ''; }
+  else { projImg.style.display = 'none'; }
+  projLabel.textContent = cfg.img ? btn.textContent.split('CUE')[0].replace(cfg.num + ' ', '').trim() : '';
+}
+
+function playAudio(btn) {
+  const file = btn.dataset.audio;
+  const scale = parseFloat(btn.dataset.volscale || '1');
+  if (currentBtn === btn && !player.paused) {
+    fadeTo(player, 0);
+    setTimeout(() => stopCurrent(false), FADE * 1000);
+    return;
+  }
+  const wasPlaying = !player.paused;
+  if (wasPlaying) fadeTo(player, 0);
+  setTimeout(() => {
+    player.pause();
+    if (currentBtn) currentBtn.classList.remove('playing');
+    player.src = file;
+    player.currentTime = 0;
+    player.volume = 0;
+    player.play();
+    fadeTo(player, vol.value / 100 * scale);
+    currentBtn = btn;
+    btn.classList.add('playing');
+    status.className = 'playing';
+    cueName.textContent = btn.querySelector('.num').textContent + ' — ' + btn.textContent.split('CUE')[0].trim();
+    setPreview(btn);
+  }, wasPlaying ? FADE * 1000 : 0);
+}
+
+// Construir secciones y botones desde CONFIG
+function buildBoard() {
+  const wrap = document.getElementById('sections');
+  wrap.innerHTML = '';
+  const byGroup = {};
+  AUDIOS.forEach(a => { (byGroup[a.group || 'Audios'] = byGroup[a.group || 'Audios'] || []).push(a); });
+  for (const group of Object.keys(byGroup)) {
+    const sec = document.createElement('section');
+    const h = document.createElement('h2');
+    h.textContent = group;
+    sec.appendChild(h);
+    const grid = document.createElement('div');
+    grid.className = 'grid';
+    byGroup[group].forEach(a => {
+      const b = document.createElement('button');
+      b.className = 'btn' + (a.wide ? ' wide' : '');
+      b.dataset.audio = a.file;
+      b.dataset.volScale = String(a.volumeScale || 1);
+      b.dataset.img = a.img || '';
+      b.innerHTML = '<span class="num">' + String(a.num).padStart(2, '0') + '</span>' +
+        '<span style="word-break:break-word">' + escapeHtml(a.label) + '</span>' +
+        (a.cue ? '<span class="cue-tag">' + escapeHtml(a.cue) + '</span>' : '');
+      b.addEventListener('click', () => playAudio(b));
+      grid.appendChild(b);
+    });
+    sec.appendChild(grid);
+    wrap.appendChild(sec);
+  }
+}
+function escapeHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+vol.addEventListener('input', () => {
+  if (!player.paused) player.volume = vol.value / 100;
+});
+
+document.getElementById('stopAll').addEventListener('click', () => {
+  if (fadeTimer) { clearInterval(fadeTimer); fadeTimer = null; }
+  fadeTo(player, 0);
+  setTimeout(() => stopCurrent(false), FADE * 1000);
+});
+
+document.addEventListener('keydown', e => {
+  const n = parseInt(e.key, 10);
+  const btns = Array.from(document.querySelectorAll('.btn'));
+  if (n >= 1 && n <= 9) {
+    const btn = btns.find(b => b.querySelector('.num').textContent === String(n).padStart(2, '0'));
+    if (btn) playAudio(btn);
+  } else if (e.code === 'Space') {
+    e.preventDefault();
+    document.getElementById('stopAll').click();
+  }
+});
+
+document.getElementById('toTop').addEventListener('click', () => {
+  document.getElementById('script').scrollTop = 0;
+});
+
+// Proyección a pantalla completa
+const overlay = document.getElementById('projOverlay');
+document.getElementById('projBtn').addEventListener('click', () => {
+  overlay.classList.add('show');
+  if (overlay.requestFullscreen) overlay.requestFullscreen().catch(() => {});
+  else if (overlay.webkitRequestFullscreen) overlay.webkitRequestFullscreen();
+});
+document.addEventListener('fullscreenchange', () => {
+  if (!document.fullscreenElement) overlay.classList.remove('show');
+});
+document.addEventListener('keydown', e => {
+  if (e.code === 'Escape' && overlay.classList.contains('show')) {
+    if (document.exitFullscreen) document.exitFullscreen();
+    overlay.classList.remove('show');
+  }
+});
+
+// Render del guion: cada [CUE n ▶ archivo] se vuelve clickeable
+function renderScript() {
+  const el = document.getElementById('script');
+  const lines = SCRIPT_TEXT.split('\n');
+  let html = '';
+  for (const line of lines) {
+    const esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;'); // eslint-disable-line no-redeclare
+    if (line.startsWith('[CUE')) {
+      const m = line.match(/CUE (\d+)\s*▶?\s*(.+)$/);
+      const n = m ? m[1] : '';
+      const f = m ? m[2].trim() : '';
+      html += '<span data-cue="' + n + '" data-file="' + esc(f) + '" title="Click: reproducir ' + esc(f) + '">▶ ' + esc(line) + '</span>\n';
+    } else if (line.startsWith('(') || line.startsWith('Sonido:') || line.startsWith('FIN') || line.startsWith('Nota')) {
+      html += '<span class="stagedir">' + esc(line) + '</span>\n';
+    } else if (line.includes(':')) {
+      const idx = line.indexOf(':');
+      html += '<b class="name">' + esc(line.slice(0, idx + 1)) + '</b>' + esc(line.slice(idx + 1)) + '\n';
+    } else if (line.trim()) {
+      html += '<b class="name">' + esc(line) + '</b>\n';
+    } else {
+      html += '\n';
+    }
+  }
+  el.innerHTML = html;
+  el.querySelectorAll('[data-cue]').forEach(span => {
+    span.addEventListener('click', () => {
+      const n = span.dataset.cue;
+      const f = span.dataset.file;
+      const btn = Array.from(document.querySelectorAll('.btn'))
+        .find(b => b.querySelector('.num').textContent === String(n).padStart(2, '0')
+               || b.dataset.audio === f);
+      if (btn) playAudio(btn);
+    });
+  });
+}
+
+buildBoard();
+renderScript();
+</script>
+</body>
+</html>
