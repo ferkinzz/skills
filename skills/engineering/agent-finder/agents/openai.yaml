@@ -1,0 +1,4 @@
+interface:
+  display_name: "Agent Finder"
+  short_description: "Encuentra y recupera sesiones de agentes"
+  default_prompt: "Usa $agent-finder para encontrar la sesión donde trabajé en esta funcionalidad y dime cómo retomarla."
