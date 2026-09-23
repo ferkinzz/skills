@@ -60,6 +60,7 @@ Ayúdame a elegir según el trabajo que quiero hacer antes de instalarla.
 
 | Skill | Para qué sirve |
 | --- | --- |
+| [agent-finder](skills/engineering/agent-finder/SKILL.md) | Encuentra conversaciones de asistentes de código por proyecto o descripción, indica cómo reabrirlas y prepara un traspaso para continuar con otro agente. |
 | [reuse-finder](skills/engineering/reuse-finder/SKILL.md) | Busca funciones, componentes, hooks y estilos en proyectos locales para reutilizar código que ya existe. |
 
 ### Planeación
@@ -82,6 +83,11 @@ skills/
 ├── .gitignore
 └── skills/
     ├── engineering/
+    │   ├── agent-finder/
+    │   │   ├── SKILL.md
+    │   │   ├── agents/
+    │   │   ├── references/
+    │   │   └── scripts/
     │   └── reuse-finder/
     │       ├── SKILL.md
     │       ├── config.json
@@ -120,6 +126,10 @@ Cada skill documenta su propio flujo de uso. Los requisitos pueden variar: algun
 Necesita Python 3. Su archivo `config.json` define la carpeta de proyectos que se analizará, las exclusiones y los tipos de archivo admitidos. Actualmente conserva la configuración personal y las rutas de instalación originales de Claude; revísalas si la instalas en otra ubicación.
 
 El índice `index.json` se genera localmente y queda fuera del control de versiones.
+
+### Configuración de agent-finder
+
+Necesita Python 3 y consulta en modo de solo lectura los historiales locales de los asistentes compatibles. Las búsquedas no crean archivos. Las extracciones y los resúmenes persistentes se guardan fuera de este repositorio en `${XDG_DATA_HOME:-~/.local/share}/agent-finder/exports/`; la ruta puede cambiarse con `AGENT_FINDER_OUTPUT_DIR`.
 
 ### Configuración de tablero-audio-teatral
 
