@@ -1,0 +1,4 @@
+interface:
+  display_name: "Platicador de proyecto"
+  short_description: "Conversaciones persistentes para decidir y planear"
+  default_prompt: "Usa $platicador-de-proyecto para retomar el contexto y preguntarme de qué quiero platicar hoy."

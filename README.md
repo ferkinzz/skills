@@ -62,6 +62,12 @@ Ayúdame a elegir según el trabajo que quiero hacer antes de instalarla.
 | --- | --- |
 | [reuse-finder](skills/engineering/reuse-finder/SKILL.md) | Busca funciones, componentes, hooks y estilos en proyectos locales para reutilizar código que ya existe. |
 
+### Planeación
+
+| Skill | Para qué sirve |
+| --- | --- |
+| [platicador-de-proyecto](skills/planeacion/platicador-de-proyecto/SKILL.md) | Mantiene conversaciones persistentes y ramificables para explorar, cuestionar y documentar decisiones de producto, comunicación, marketing y evolución futura sin modificar la aplicación. |
+
 ### Creativa
 
 | Skill | Para qué sirve |
@@ -80,6 +86,12 @@ skills/
     │       ├── SKILL.md
     │       ├── config.json
     │       └── scripts/
+    ├── planeacion/
+    │   └── platicador-de-proyecto/
+    │       ├── SKILL.md
+    │       ├── agents/
+    │       ├── references/
+    │       └── scripts/
     └── creativa/
         └── tablero-audio-teatral/
             ├── SKILL.md
@@ -93,7 +105,7 @@ skills/
 
 La primera carpeta `skills/` del esquema es este repositorio; la carpeta interior contiene la colección.
 
-Las skills se agrupan por su propósito. Actualmente existen `engineering/` (desarrollo) y `creativa/` (contenido y artes escénicas). Se agregarán otras categorías cuando haya skills que las necesiten.
+Las skills se agrupan por su propósito. Actualmente existen `engineering/` (desarrollo), `planeacion/` (decisiones y estrategia) y `creativa/` (contenido y artes escénicas). Se agregarán otras categorías cuando haya skills que las necesiten.
 
 ## Cómo usar esta colección
 
